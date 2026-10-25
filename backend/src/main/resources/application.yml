@@ -1,0 +1,79 @@
+# Hemmeligheter leses fra miljøvariabler. Ved lokal utvikling hentes de fra ../.env
+# (kopier .env.example i rotmappen). Ingen passord skal skrives inn i denne filen.
+spring:
+  application:
+    name: fitness-app-backend
+  config:
+    import: optional:file:../.env[.properties]
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5433}/${POSTGRES_DB:fitness}
+    username: ${POSTGRES_USER:fitness}
+    password: ${POSTGRES_PASSWORD:}
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        # Henter øvelser og sett for mange økter i få spørringer (unngår N+1).
+        default_batch_fetch_size: 100
+    hibernate:
+      # Skjemaet eies av Flyway. Hibernate får bare validere, aldri endre.
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+  mail:
+    # Lokalt: Mailpit fra compose.yaml (se e-postene på http://localhost:8025).
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+  servlet:
+    multipart:
+      # Profilbilder lastes opp som multipart. Serveren skalerer dem ned etterpå.
+      max-file-size: 10MB
+      max-request-size: 11MB
+  mvc:
+    problemdetails:
+      # Konsekvente feilsvar etter RFC 9457 (application/problem+json).
+      enabled: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+app:
+  dev-user:
+    # Av som standard. Slås på i application-local.yml (brukes av ./gradlew bootRun).
+    enabled: false
+  auth:
+    # Hemmelig nøkkel for å signere tilgangstokens (minst 32 tegn). Settes i .env, aldri i koden.
+    jwt-secret: ${AUTH_JWT_SECRET:}
+    access-token-ttl: 15m
+    refresh-token-ttl: 60d
+    # OAuth-klient-ID-er fra Google Cloud (web-klienten), kommaseparert. Tom = Google-innlogging av.
+    google-client-ids: ${GOOGLE_CLIENT_IDS:}
+    mail-from: ${MAIL_FROM:Treningsapp <no-reply@treningsapp.local>}
+    # Skriver innloggingskoder til loggen. Bare for lokal utvikling.
+    log-codes: false
+    # Grense mot misbruk av e-postkoder. Slått av lokalt (application-local.yml) mens vi tester.
+    max-codes-per-hour: 5
+  terms:
+    # Versjonen av vilkår og personvernerklæring. Endres den, må alle godta på nytt (appen viser dem igjen).
+    version: ${TERMS_VERSION:2026-10-24}
+  media:
+    # Lokalt lagres bilder i en mappe. Når vi velger skytilbyder, byttes lagringen til S3/R2.
+    dir: ${MEDIA_DIR:data/media}
+    # Adressen telefonen henter bilder fra (GET /media/...).
+    public-url: ${MEDIA_PUBLIC_URL:http://localhost:8080/media}

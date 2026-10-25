@@ -1,0 +1,16 @@
+# Sikkerhetsoppdateringer og ukentlige oppdateringer.
+# npm: bare sikkerhetsfikser (limit 0), fordi Expo-pakkene skal oppgraderes samlet med «npx expo install --fix».
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+  - package-ecosystem: gradle
+    directory: /backend
+    schedule: { interval: weekly }
+    groups:
+      backend: { patterns: ['*'] }
+  - package-ecosystem: npm
+    directory: /mobile
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 0

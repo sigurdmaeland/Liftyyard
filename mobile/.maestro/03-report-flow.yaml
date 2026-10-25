@@ -1,0 +1,15 @@
+appId: no.sigurdmaeland.treningsapp
+name: Rapporteringsskjemaet krever en grunn
+---
+- launchApp
+- tapOn: "Hjem"
+- tapOn:
+    text: "Valg for økten.*"
+    index: 0
+    optional: true
+- tapOn:
+    text: "Rapporter økten"
+    optional: true
+- assertVisible:
+    text: "Hva er galt med økten?"
+    optional: true

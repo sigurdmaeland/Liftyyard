@@ -1,0 +1,26 @@
+appId: no.sigurdmaeland.treningsapp
+name: Start en tom økt, logg et sett og fullfør
+---
+- launchApp
+- tapOn: "Trening"
+- tapOn:
+    text: "Start tom økt"
+    optional: true
+- tapOn: "Legg til øvelser"
+- tapOn: "Søk etter øvelser"
+- inputText: "Bench"
+- tapOn: "Bench Press"
+- tapOn:
+    text: "Legg til.*"
+- tapOn: "Bench Press.*"
+- tapOn: "kg, sett 1"
+- inputText: "60"
+- tapOn: "reps, sett 1"
+- inputText: "8"
+- tapOn: "Fullfør sett 1"
+- back
+- tapOn: "Fullfør økten"
+- tapOn:
+    text: "Lagre"
+    optional: true
+- assertVisible: "Bra jobba! Økten er lagret."

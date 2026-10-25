@@ -1,0 +1,12 @@
+appId: no.sigurdmaeland.treningsapp
+name: Utforsk, personer og innstillinger kan åpnes
+---
+- launchApp
+- tapOn: "Utforsk"
+- assertVisible: "Programmer"
+- tapOn: "Personer"
+- assertVisible:
+    text: "Forslag til deg|Finn folk å trene med"
+- tapOn: "Hjem"
+- tapOn: "Din profil"
+- assertVisible: "Månedsoppsummering"

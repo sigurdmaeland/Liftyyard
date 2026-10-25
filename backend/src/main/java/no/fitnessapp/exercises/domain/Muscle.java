@@ -1,0 +1,6 @@
+package no.fitnessapp.exercises.domain;
+
+public enum Muscle {
+    CHEST, LATS, UPPER_BACK, LOWER_BACK, TRAPS, SHOULDERS, BICEPS, TRICEPS, FOREARMS,
+    ABS, OBLIQUES, QUADS, HAMSTRINGS, GLUTES, CALVES, ADDUCTORS, ABDUCTORS
+}

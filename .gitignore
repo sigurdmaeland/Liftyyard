@@ -1,0 +1,15 @@
+# Hemmeligheter og lokal konfigurasjon
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+.idea/
+
+# Lokalt lagrede bilder og byggfiler
+backend/data/
+backend/build/
+
+# Midlertidige arkiver
+*.tgz

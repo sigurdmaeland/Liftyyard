@@ -1,0 +1,10 @@
+# Lokal utvikling. Aktiveres automatisk av ./gradlew bootRun (se build.gradle.kts).
+app:
+  dev-user:
+    enabled: true
+    id: 00000000-0000-7000-8000-000000000001
+    display-name: Utvikler
+  auth:
+    log-codes: true
+    # Ingen grense på antall e-postkoder lokalt, så du kan teste innlogging fritt. Skal på igjen i drift.
+    max-codes-per-hour: 0

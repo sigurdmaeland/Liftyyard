@@ -1,0 +1,7 @@
+# Bare for tester (lastes i tillegg til src/main/resources/application.yml). Ikke en ekte hemmelighet.
+app:
+  auth:
+    jwt-secret: test-secret-som-bare-brukes-i-tester-0123456789
+    google-client-ids: test-google-client
+  media:
+    dir: build/test-media
