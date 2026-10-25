@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { RestTimerBar } from '@/features/workout/rest-timer-bar';
 import { SetsEditor } from '@/features/workout/sets-editor';
 import { useLocalQuery } from '@/hooks/use-local-query';
+import { restsAfterSet } from '@/lib/superset';
 import { useTheme } from '@/hooks/use-theme';
 import { getActiveWorkout } from '@/storage/workout-store';
 import { MaxContentWidth, Spacing } from '@/theme';
@@ -55,7 +56,18 @@ export default function WorkoutExerciseScreen() {
           <ThemedText type="small" themeColor="textSecondary">
             Øvelse {index + 1} av {workout.exercises.length} · Trykk på settnummeret for å bytte type, hold for å slette
           </ThemedText>
-          <SetsEditor key={exercise.id} workoutId={workout.id} exercise={exercise} onChanged={reload} />
+          {!restsAfterSet(workout.exercises, exercise.id) && next && (
+            <ThemedText type="smallBold" style={{ color: theme.accent }}>
+              Supersett: gå rett videre til {next.exerciseName}. Hviletimeren starter etter siste øvelse i supersettet.
+            </ThemedText>
+          )}
+          <SetsEditor
+            key={exercise.id}
+            workoutId={workout.id}
+            exercise={exercise}
+            restAfterSet={restsAfterSet(workout.exercises, exercise.id)}
+            onChanged={reload}
+          />
           <View style={styles.nav}>
             <Button
               label={prev ? `‹ ${prev.exerciseName}` : 'Til oversikten'}

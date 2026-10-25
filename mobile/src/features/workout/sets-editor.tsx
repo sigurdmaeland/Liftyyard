@@ -15,11 +15,13 @@ import type { PreviousSet, WorkoutExercise } from '@/types/workout';
 type Props = {
   workoutId: string;
   exercise: WorkoutExercise;
+  /** False for øvelser midt i et supersett: da hviler man ikke før neste øvelse. */
+  restAfterSet?: boolean;
   onChanged: () => void;
 };
 
 /** Settabellen for én øvelse i den aktive økten: notat, kolonner, sett og «Legg til sett». */
-export function SetsEditor({ workoutId, exercise, onChanged }: Props) {
+export function SetsEditor({ workoutId, exercise, restAfterSet = true, onChanged }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const [previous, setPrevious] = useState<PreviousSet[]>([]);
@@ -77,6 +79,7 @@ export function SetsEditor({ workoutId, exercise, onChanged }: Props) {
           label={labels[i]}
           previousText={previous[i] ? describeSet(exercise.exerciseType, previous[i], (n) => formatNumber(n)) : ''}
           suggestion={suggestionFor(i, exercise.sets, previous)}
+          startsRest={restAfterSet}
           onChanged={onChanged}
         />
       ))}

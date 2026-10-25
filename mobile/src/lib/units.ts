@@ -1,6 +1,6 @@
 /*
- * Vektenhet for treningsvekter (sett, rutiner, volum og rekorder). Alt lagres i kg; bare visning
- * og inntasting regnes om. Kroppsvekt vises fortsatt i kg.
+ * Vektenhet for sett, rutiner, volum, rekorder og kroppsvekt. Alt lagres i kg; bare visning
+ * og inntasting regnes om.
  */
 export type WeightUnit = 'KG' | 'LB';
 

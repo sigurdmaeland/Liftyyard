@@ -1,6 +1,6 @@
-# Treningsapp (arbeidstittel)
+# Liftyard
 
-Styrketreningsapp for iOS og Android. Prosjektet ligger i `~/Developer/fitness-app`, utenfor iCloud-synkronisert Skrivebord. Repoet inneholder mobilappen (`mobile/`), backend (`backend/`) og dokumentasjon (`docs/`). Se [docs/architecture.md](docs/architecture.md) for arkitektur, versjoner og plan.
+Sosial styrketreningsapp for iOS og Android. Prosjektet ligger i `~/Developer/fitness-app`, utenfor iCloud-synkronisert Skrivebord. Repoet inneholder mobilappen (`mobile/`), backend (`backend/`) og dokumentasjon (`docs/`). Se [docs/architecture.md](docs/architecture.md) for arkitektur, versjoner og plan.
 
 ## Forutsetninger (macOS)
 

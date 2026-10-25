@@ -2,7 +2,7 @@
 # (kopier .env.example i rotmappen). Ingen passord skal skrives inn i denne filen.
 spring:
   application:
-    name: fitness-app-backend
+    name: liftyard-backend
   config:
     import: optional:file:../.env[.properties]
   datasource:
@@ -64,7 +64,7 @@ app:
     refresh-token-ttl: 60d
     # OAuth-klient-ID-er fra Google Cloud (web-klienten), kommaseparert. Tom = Google-innlogging av.
     google-client-ids: ${GOOGLE_CLIENT_IDS:}
-    mail-from: ${MAIL_FROM:Treningsapp <no-reply@treningsapp.local>}
+    mail-from: ${MAIL_FROM:Liftyard <no-reply@liftyard.local>}
     # Skriver innloggingskoder til loggen. Bare for lokal utvikling.
     log-codes: false
     # Grense mot misbruk av e-postkoder. Slått av lokalt (application-local.yml) mens vi tester.

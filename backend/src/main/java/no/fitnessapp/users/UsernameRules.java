@@ -10,7 +10,7 @@ public final class UsernameRules {
 
     private static final Pattern ALLOWED = Pattern.compile("^[a-z0-9._]{3,30}$");
     private static final Set<String> RESERVED = Set.of(
-            "admin", "administrator", "support", "help", "hjelp", "treningsapp", "system", "root", "moderator", "mod",
+            "admin", "administrator", "support", "help", "hjelp", "treningsapp", "liftyard", "system", "root", "moderator", "mod",
             "staff", "official", "offisiell", "api", "www", "me", "meg", "du", "settings", "innstillinger", "login",
             "logout", "search", "sok", "null", "undefined", "anonymous", "anonym", "user", "users", "bruker", "brukere");
 

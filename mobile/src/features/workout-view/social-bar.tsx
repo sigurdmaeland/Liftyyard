@@ -16,7 +16,7 @@ export function openComments(workoutId: string, focus = false) {
 /** Deler en tekstoppsummering av økten via telefonens delingsark. */
 export function shareWorkout(w: { name: string; volumeKg: number }, author?: string) {
   const who = author ? `${author}: ` : '';
-  Share.share({ message: `${who}${w.name} – ${formatVolume(w.volumeKg)} løftet. Logget i Treningsapp.` }).catch(() => {});
+  Share.share({ message: `${who}${w.name} – ${formatVolume(w.volumeKg)} løftet. Logget i Liftyard.` }).catch(() => {});
 }
 
 /** «Vær den første som liker!» / «3 liker» til venstre, «2 kommentarer» til høyre. */

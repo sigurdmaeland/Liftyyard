@@ -13,7 +13,7 @@ import { formatNumber, parseDecimal } from '@/lib/format';
 import { syncPendingWorkouts } from '@/services/sync';
 import { addMeasurement } from '@/storage/measurement-store';
 import { Radius, Spacing } from '@/theme';
-import { MEASUREMENT_LABELS, isMeasurementKind, measurementLimits, measurementUnit } from '@/types/measurement';
+import { MEASUREMENT_LABELS, fromMeasurementDisplay, isMeasurementKind, measurementLimits, measurementUnit } from '@/types/measurement';
 
 /** Registrer en måling (?kind=WEIGHT, WAIST, …). Dato kan settes tilbake i tid. */
 export default function AddMeasurementScreen() {
@@ -43,7 +43,7 @@ export default function AddMeasurementScreen() {
     setSaving(true);
     // Ikke frem i tid: velges dagens dato, brukes klokkeslettet nå.
     const at = date.getTime() > Date.now() ? new Date() : date;
-    await addMeasurement(db, kind, Math.round(value * 100) / 100, at.toISOString());
+    await addMeasurement(db, kind, fromMeasurementDisplay(kind, value), at.toISOString());
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     syncPendingWorkouts(db).catch(() => {});
     router.back();

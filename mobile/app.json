@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "Treningsapp",
-    "slug": "fitness-app",
+    "name": "Liftyard",
+    "slug": "liftyard",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "fitnessapp",
+    "scheme": "liftyard",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "no.sigurdmaeland.treningsapp",
+      "bundleIdentifier": "no.sigurdmaeland.liftyard",
       "infoPlist": {
         "CFBundleDevelopmentRegion": "nb",
         "CFBundleLocalizations": [
@@ -19,13 +19,13 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#2A64F0",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "no.sigurdmaeland.treningsapp"
+      "package": "no.sigurdmaeland.liftyard"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"

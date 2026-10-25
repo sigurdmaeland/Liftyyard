@@ -12,7 +12,8 @@ import { formatNumber, parseDecimal } from '@/lib/format';
 import { syncPendingWorkouts } from '@/services/sync';
 import { getGoalWeight, setGoalWeight } from '@/storage/measurement-store';
 import { Radius, Spacing } from '@/theme';
-import { measurementLimits } from '@/types/measurement';
+import { fromMeasurementDisplay, measurementLimits } from '@/types/measurement';
+import { toDisplay, unitLabel } from '@/lib/units';
 
 /** Sett, endre eller fjern vektmålet. */
 export default function GoalScreen() {
@@ -24,13 +25,13 @@ export default function GoalScreen() {
 function GoalForm({ existing }: { existing: number | null }) {
   const db = useSQLiteContext();
   const theme = useTheme();
-  const [text, setText] = useState(existing !== null ? formatNumber(existing, 1) : '');
+  const [text, setText] = useState(existing !== null ? formatNumber(toDisplay(existing), 1) : '');
   const limits = measurementLimits('WEIGHT');
   const value = parseDecimal(text);
   const valid = value !== null && value >= limits.min && value <= limits.max;
 
   const save = async (kg: number | null) => {
-    await setGoalWeight(db, kg === null ? null : Math.round(kg * 10) / 10);
+    await setGoalWeight(db, kg === null ? null : fromMeasurementDisplay('WEIGHT', kg));
     syncPendingWorkouts(db).catch(() => {});
     router.back();
   };
@@ -54,11 +55,11 @@ function GoalForm({ existing }: { existing: number | null }) {
             autoFocus
             placeholder="0"
             placeholderTextColor={theme.textSecondary}
-            accessibilityLabel="Vektmål i kilo"
+            accessibilityLabel={`Vektmål i ${unitLabel() === 'lb' ? 'pund' : 'kilo'}`}
             style={[styles.value, { color: theme.text }]}
           />
           <ThemedText style={styles.unit} themeColor="textSecondary">
-            kg
+            {unitLabel()}
           </ThemedText>
         </View>
         {existing !== null && (

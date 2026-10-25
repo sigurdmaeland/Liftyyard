@@ -2,6 +2,7 @@ import type { ComponentRef, Ref } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
+import { LiftyardMark } from '@/components/liftyard-mark';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/theme';
 
@@ -54,7 +55,10 @@ export function ShareCard({
           </ThemedText>
         ))}
       </View>
-      <ThemedText style={styles.brand}>Treningsapp</ThemedText>
+      <View style={styles.brandRow}>
+        <LiftyardMark size={18} color="#FFFFFF" />
+        <ThemedText style={styles.brand}>Liftyard</ThemedText>
+      </View>
     </View>
   );
 }
@@ -69,5 +73,6 @@ const styles = StyleSheet.create({
   statLabel: { color: '#C9CED6', fontSize: 13, lineHeight: 16 },
   lines: { gap: 2, marginTop: Spacing.two, flex: 1 },
   line: { color: '#E8EAED', fontSize: 15, lineHeight: 20 },
-  brand: { color: '#FFFFFF', fontSize: 14, fontWeight: 800, opacity: 0.85, alignSelf: 'flex-end' },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-end', opacity: 0.9 },
+  brand: { color: '#FFFFFF', fontSize: 14, fontWeight: 800 },
 });

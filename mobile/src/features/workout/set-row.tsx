@@ -26,6 +26,8 @@ type Props = {
   label: string;
   previousText: string;
   suggestion: Partial<Record<SetField, number>>;
+  /** Start hviletimeren når settet fullføres. Av for alle unntatt siste øvelse i et supersett. */
+  startsRest?: boolean;
   onChanged: () => void;
 };
 
@@ -34,7 +36,7 @@ type Props = {
  * settet. Tomme felt fylles da med forslaget (forrige gang eller forrige sett).
  * Trykk på settnummeret bytter type, og langt trykk sletter settet.
  */
-export function SetRow({ workoutId, exerciseType, set, label, previousText, suggestion, onChanged }: Props) {
+export function SetRow({ workoutId, exerciseType, set, label, previousText, suggestion, startsRest = true, onChanged }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const fields = fieldsFor(exerciseType);
@@ -77,7 +79,7 @@ export function SetRow({ workoutId, exerciseType, set, label, previousText, sugg
     }
     await setCompleted(db, workoutId, set.id, values);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    restTimer.startDefault();
+    if (startsRest) restTimer.startDefault();
     onChanged();
     // Ny personlig rekord? Vis det med en gang, mens man fortsatt er i økten.
     const records = await newRecordsForSet(db, set.id, values.weightKg ?? null, values.reps ?? null).catch(() => []);

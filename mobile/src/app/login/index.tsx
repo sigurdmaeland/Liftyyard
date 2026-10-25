@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Icon } from '@/components/icon';
+import { LiftyardMark } from '@/components/liftyard-mark';
 import { ThemedText } from '@/components/themed-text';
 import { completeLogin } from '@/features/auth/account';
 import { getGoogleIdToken, googleSignInAvailable } from '@/features/auth/google';
@@ -36,11 +37,12 @@ export default function WelcomeScreen() {
     <SafeAreaView style={[styles.fill, { backgroundColor: theme.background }]}>
       <View style={styles.content}>
         <View style={styles.hero}>
-          <View style={[styles.logo, { backgroundColor: theme.text }]}>
-            <Icon name="dumbbell.fill" size={44} color={theme.background} fallback="🏋" />
+          {/* Svart logo med blå vektstang. I mørk modus får den en tynn kant så den ikke forsvinner mot bakgrunnen. */}
+          <View style={[styles.logo, { backgroundColor: '#0B0D10', borderWidth: 1, borderColor: theme.backgroundSelected }]}>
+            <LiftyardMark size={60} color="#FFFFFF" barColor={theme.accentFill} />
           </View>
           <ThemedText accessibilityRole="header" style={styles.title}>
-            Treningsapp
+            Liftyard
           </ThemedText>
           <ThemedText themeColor="textSecondary" style={styles.subtitle}>
             Logg øktene dine, følg fremgangen og tren sammen med andre.

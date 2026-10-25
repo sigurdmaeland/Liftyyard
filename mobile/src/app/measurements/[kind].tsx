@@ -12,7 +12,7 @@ import { formatNumber } from '@/lib/format';
 import { syncPendingWorkouts } from '@/services/sync';
 import { deleteMeasurement, listMeasurements } from '@/storage/measurement-store';
 import { MaxContentWidth, Radius, Spacing } from '@/theme';
-import { MEASUREMENT_LABELS, type Measurement, isMeasurementKind, measurementUnit } from '@/types/measurement';
+import { MEASUREMENT_LABELS, type Measurement, isMeasurementKind, measurementUnit, toMeasurementDisplay } from '@/types/measurement';
 
 /** Historikk for én type måling: graf og liste. Trykk på en måling for å slette den. */
 export default function MeasurementHistoryScreen() {
@@ -27,9 +27,10 @@ export default function MeasurementHistoryScreen() {
   if (!valid) return null;
   const unit = measurementUnit(kind);
   const fmt = (v: number) => `${formatNumber(v, 1)} ${unit}`;
+  const shown = (m: { value: number }) => toMeasurementDisplay(kind, m.value);
 
   const confirmDelete = (m: Measurement) =>
-    Alert.alert('Slette målingen?', `${fmt(m.value)} – ${new Date(m.measuredAt).toLocaleDateString('nb-NO')}`, [
+    Alert.alert('Slette målingen?', `${fmt(shown(m))} – ${new Date(m.measuredAt).toLocaleDateString('nb-NO')}`, [
       { text: 'Avbryt', style: 'cancel' },
       {
         text: 'Slett',
@@ -61,7 +62,7 @@ export default function MeasurementHistoryScreen() {
       {entries.length > 0 && (
         <View style={[styles.card, { backgroundColor: theme.card }]}>
           <LineChart
-            points={entries.map((m) => ({ date: m.measuredAt, value: m.value }))}
+            points={entries.map((m) => ({ date: m.measuredAt, value: shown(m) }))}
             height={200}
             noun="målinger"
             format={fmt}
@@ -86,7 +87,7 @@ export default function MeasurementHistoryScreen() {
               <ThemedText style={styles.flex}>
                 {new Date(m.measuredAt).toLocaleDateString('nb-NO', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}
               </ThemedText>
-              <ThemedText style={styles.value}>{fmt(m.value)}</ThemedText>
+              <ThemedText style={styles.value}>{fmt(shown(m))}</ThemedText>
             </Pressable>
           ))}
         </View>

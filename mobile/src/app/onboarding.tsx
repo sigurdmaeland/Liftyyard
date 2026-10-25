@@ -21,7 +21,8 @@ import { syncPendingWorkouts } from '@/services/sync';
 import { addMeasurement } from '@/storage/measurement-store';
 import { saveProfileFields, setLocalUsername, setProfilePhoto } from '@/storage/profile-store';
 import { MaxContentWidth, Radius, Spacing } from '@/theme';
-import { measurementLimits } from '@/types/measurement';
+import { fromMeasurementDisplay, measurementLimits } from '@/types/measurement';
+import { unitLabel } from '@/lib/units';
 import {
   GENDER_LABELS,
   type Gender,
@@ -150,7 +151,7 @@ export default function OnboardingScreen() {
       });
       const now = new Date().toISOString();
       if (heightValue !== null && height.trim()) await addMeasurement(db, 'HEIGHT', heightValue, now);
-      if (weightValue !== null && weight.trim()) await addMeasurement(db, 'WEIGHT', Math.round(weightValue * 100) / 100, now);
+      if (weightValue !== null && weight.trim()) await addMeasurement(db, 'WEIGHT', fromMeasurementDisplay('WEIGHT', weightValue), now);
       if (photo) await setProfilePhoto(db, photo);
       await refreshProfile(db);
       syncPendingWorkouts(db).catch(() => {});
@@ -296,7 +297,7 @@ export default function OnboardingScreen() {
                   style={!heightValid ? { borderColor: theme.danger } : undefined}
                 />
                 <OutlinedField
-                  label="Vekt (kg)"
+                  label={`Vekt (${unitLabel()})`}
                   floatLabel
                   placeholder="Valgfritt"
                   value={weight}
@@ -308,7 +309,7 @@ export default function OnboardingScreen() {
               {(!heightValid || !weightValid) && (
                 <ThemedText type="small" style={{ color: theme.danger }}>
                   {!heightValid ? `Høyden må være mellom ${hLimits.min} og ${hLimits.max} cm. ` : ''}
-                  {!weightValid ? `Vekten må være mellom ${formatNumber(wLimits.min)} og ${formatNumber(wLimits.max)} kg.` : ''}
+                  {!weightValid ? `Vekten må være mellom ${formatNumber(wLimits.min)} og ${formatNumber(wLimits.max)} ${unitLabel()}.` : ''}
                 </ThemedText>
               )}
               <ThemedText type="small" themeColor="textSecondary">

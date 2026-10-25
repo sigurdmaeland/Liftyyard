@@ -1,10 +1,10 @@
 # App Store og Google Play – utkast
 
-Navn og ikon er ikke bestemt ennå («Treningsapp» er arbeidstittel). Teksten under er skrevet så
+Appen heter **Liftyard** (app-ID `no.sigurdmaeland.liftyard`). Logoen er en Y der armene løfter en vektstang, hvit på blått (#2A64F0). Kilde: `mobile/assets/brand/liftyard-mark.svg`; app-ikonene i `mobile/assets` er laget fra den. Teksten under er skrevet så
 den er lett å tilpasse.
 
 ## Navn og undertittel
-- **Navn (maks 30 tegn):** Treningsapp
+- **Navn (maks 30 tegn):** Liftyard
 - **Undertittel (maks 30 tegn):** Logg styrketrening sammen
 
 ## Beskrivelse

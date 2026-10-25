@@ -41,11 +41,11 @@ class ExploreApiIT {
     @Test
     void listsSeededPublicPrograms() throws Exception {
         String json = mockMvc.perform(get("/api/explore/programs")).andReturn().getResponse().getContentAsString();
-        assertThat(JsonPath.<java.util.List<Object>>read(json, "$[?(@.authorName == 'Treningsapp')]")).hasSize(6);
+        assertThat(JsonPath.<java.util.List<Object>>read(json, "$[?(@.authorName == 'Liftyard')]")).hasSize(6);
         mockMvc.perform(get("/api/explore/programs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[?(@.name == 'Push / Pull / Legs')].routineCount").value(3))
-                .andExpect(jsonPath("$[?(@.name == 'Push / Pull / Legs')].authorName").value("Treningsapp"))
+                .andExpect(jsonPath("$[?(@.name == 'Push / Pull / Legs')].authorName").value("Liftyard"))
                 .andExpect(jsonPath("$[?(@.name == 'Push / Pull / Legs')].level").value("INTERMEDIATE"));
     }
 

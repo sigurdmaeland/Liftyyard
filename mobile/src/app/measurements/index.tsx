@@ -10,7 +10,7 @@ import { formatNumber } from '@/lib/format';
 import { latest } from '@/lib/profile-stats';
 import { listMeasurements } from '@/storage/measurement-store';
 import { MaxContentWidth, Radius, Spacing } from '@/theme';
-import { BODY_PART_KINDS, MEASUREMENT_LABELS, type Measurement, type MeasurementKind, measurementUnit } from '@/types/measurement';
+import { BODY_PART_KINDS, MEASUREMENT_LABELS, type Measurement, type MeasurementKind, measurementUnit, toMeasurementDisplay } from '@/types/measurement';
 
 const GROUPS: { title: string; kinds: MeasurementKind[] }[] = [
   { title: 'Kropp', kinds: ['WEIGHT', 'BODY_FAT', 'HEIGHT'] },
@@ -47,7 +47,7 @@ export default function AllMeasurementsScreen() {
                   style={[styles.row, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.backgroundSelected }]}>
                   <ThemedText style={styles.flex}>{MEASUREMENT_LABELS[kind]}</ThemedText>
                   <ThemedText themeColor={m ? 'text' : 'textSecondary'} style={styles.value}>
-                    {m ? `${formatNumber(m.value, 1)} ${measurementUnit(kind)}` : '—'}
+                    {m ? `${formatNumber(toMeasurementDisplay(kind, m.value), 1)} ${measurementUnit(kind)}` : '—'}
                   </ThemedText>
                   <Icon name="chevron.right" size={14} color={theme.textSecondary} fallback="›" />
                 </Pressable>

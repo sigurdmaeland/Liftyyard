@@ -13,7 +13,8 @@ import { formatNumber } from '@/lib/format';
 import { CHANGE_WINDOWS, latest, weighInDays, weightChange } from '@/lib/profile-stats';
 import { getGoalWeight, listMeasurements } from '@/storage/measurement-store';
 import { Radius, Spacing } from '@/theme';
-import { BODY_PART_KINDS, MEASUREMENT_LABELS, type Measurement, type MeasurementKind, measurementUnit } from '@/types/measurement';
+import { BODY_PART_KINDS, MEASUREMENT_LABELS, type Measurement, type MeasurementKind, measurementUnit, toMeasurementDisplay } from '@/types/measurement';
+import { toDisplay, unitLabel } from '@/lib/units';
 
 type Range = '3m' | '6m' | '1y' | 'all';
 const RANGES: { value: Range; label: string }[] = [
@@ -27,8 +28,13 @@ const RANGE_MONTHS: Record<Range, number | null> = { '3m': 3, '6m': 6, '1y': 12,
 const load = async (db: SQLiteDatabase) => ({ measurements: await listMeasurements(db), goal: await getGoalWeight(db) });
 
 const shortDate = (iso: string) => new Date(iso).toLocaleDateString('nb-NO', { day: 'numeric', month: 'short' });
-const kg = (v: number) => `${formatNumber(v, 1)} kg`;
-const signed = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : '±'}${formatNumber(Math.abs(v), 1)} kg`;
+// Kroppsvekt lagres i kg og vises i valgt enhet. Grafen får verdiene ferdig omregnet, derav to varianter.
+const weight = (kgValue: number) => `${formatNumber(toDisplay(kgValue), 1)} ${unitLabel()}`;
+const plain = (shown: number) => `${formatNumber(shown, 1)} ${unitLabel()}`;
+const signed = (kgDelta: number) => {
+  const v = toDisplay(kgDelta);
+  return `${v > 0 ? '+' : v < 0 ? '−' : '±'}${formatNumber(Math.abs(v), 1)} ${unitLabel()}`;
+};
 
 const addMeasurement = (kind: MeasurementKind) => router.push({ pathname: '/measurements/add', params: { kind } });
 const openKind = (kind: MeasurementKind) => router.push({ pathname: '/measurements/[kind]', params: { kind } });
@@ -56,7 +62,7 @@ export function MeasurementsTab() {
     if (months !== null) from.setMonth(from.getMonth() - months);
     return weights
       .filter((m) => months === null || new Date(m.measuredAt).getTime() >= from.getTime())
-      .map((m) => ({ date: m.measuredAt, value: m.value }));
+      .map((m) => ({ date: m.measuredAt, value: toDisplay(m.value) }));
   }, [weights, range]);
 
   const latestOf = (kind: MeasurementKind) => latest(byKind.get(kind) ?? []);
@@ -69,11 +75,11 @@ export function MeasurementsTab() {
             <ThemedText type="small" themeColor="textSecondary">
               Nåværende vekt
             </ThemedText>
-            <ThemedText style={styles.big}>{current ? formatNumber(current.value, 1) : '—'} kg</ThemedText>
+            <ThemedText style={styles.big}>{current ? weight(current.value) : `— ${unitLabel()}`}</ThemedText>
             {goal !== null && (
               <ThemedText type="small" themeColor="textSecondary">
-                Mål: {kg(goal)}
-                {current ? ` · ${formatNumber(Math.abs(current.value - goal), 1)} kg ${current.value > goal ? 'igjen ned' : current.value < goal ? 'igjen opp' : '– nådd!'}` : ''}
+                Mål: {weight(goal)}
+                {current ? ` · ${weight(Math.abs(current.value - goal))} ${current.value > goal ? 'igjen ned' : current.value < goal ? 'igjen opp' : '– nådd!'}` : ''}
               </ThemedText>
             )}
           </View>
@@ -121,7 +127,7 @@ export function MeasurementsTab() {
             </ThemedText>
           </View>
         ) : (
-          <LineChart points={chartPoints} height={190} noun="målinger" format={kg} formatDate={shortDate} />
+          <LineChart points={chartPoints} height={190} noun="målinger" format={plain} formatDate={shortDate} />
         )}
         <Segmented options={RANGES} value={range} onChange={setRange} />
       </SectionCard>
@@ -168,7 +174,7 @@ export function MeasurementsTab() {
               {m ? (
                 <>
                   <ThemedText style={styles.partValue}>
-                    {formatNumber(m.value, 1)} {measurementUnit(kind)}
+                    {formatNumber(toMeasurementDisplay(kind, m.value), 1)} {measurementUnit(kind)}
                   </ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">
                     {shortDate(m.measuredAt)}

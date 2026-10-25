@@ -208,7 +208,7 @@ export default function SettingsScreen() {
         </View>
       </Group>
       <ThemedText type="small" themeColor="textSecondary" style={styles.footnote}>
-        Vektenheten gjelder sett, rutiner, volum og rekorder. Kroppsvekt og mål vises i kg og cm.
+        Vektenheten gjelder sett, rutiner, volum, rekorder og kroppsvekt. Kroppsmål vises i cm.
       </ThemedText>
 
       <Group title="Data">

@@ -1,4 +1,9 @@
-/** Kroppsmålinger. Speiler backend MeasurementKind: WEIGHT i kg, BODY_FAT i prosent, resten i cm. */
+import { fromDisplay, toDisplay, unitLabel } from '@/lib/units';
+
+/**
+ * Kroppsmålinger. Speiler backend MeasurementKind: WEIGHT i kg, BODY_FAT i prosent, resten i cm.
+ * Kroppsvekt lagres alltid i kg, men vises og skrives inn i valgt vektenhet (kg/lb).
+ */
 export type MeasurementKind =
   | 'WEIGHT'
   | 'BODY_FAT'
@@ -61,14 +66,15 @@ export const BODY_PART_KINDS: MeasurementKind[] = [
 ];
 
 export function measurementUnit(kind: MeasurementKind): string {
-  if (kind === 'WEIGHT') return 'kg';
+  if (kind === 'WEIGHT') return unitLabel();
   if (kind === 'BODY_FAT') return '%';
   return 'cm';
 }
 
 /** Rimelige grenser for inntasting (samme øvre grense som serveren). */
 export function measurementLimits(kind: MeasurementKind): { min: number; max: number } {
-  if (kind === 'WEIGHT') return { min: 20, max: 400 };
+  // Grensene gjelder verdien slik den skrives inn, altså i valgt enhet for vekt.
+  if (kind === 'WEIGHT') return { min: Math.ceil(toDisplay(20)), max: Math.floor(toDisplay(400)) };
   if (kind === 'BODY_FAT') return { min: 1, max: 75 };
   if (kind === 'HEIGHT') return { min: 50, max: 260 };
   return { min: 5, max: 300 };
@@ -76,4 +82,14 @@ export function measurementLimits(kind: MeasurementKind): { min: number; max: nu
 
 export function isMeasurementKind(value: string | undefined): value is MeasurementKind {
   return value !== undefined && value in MEASUREMENT_LABELS;
+}
+
+/** Lagret verdi → det brukeren ser (kroppsvekt i valgt enhet). */
+export function toMeasurementDisplay(kind: MeasurementKind, value: number): number {
+  return kind === 'WEIGHT' ? toDisplay(value) : value;
+}
+
+/** Innskrevet verdi → det som lagres (kroppsvekt i kg), avrundet til to desimaler. */
+export function fromMeasurementDisplay(kind: MeasurementKind, value: number): number {
+  return Math.round((kind === 'WEIGHT' ? fromDisplay(value) : value) * 100) / 100;
 }

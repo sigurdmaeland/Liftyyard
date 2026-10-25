@@ -22,7 +22,8 @@ import { syncPendingWorkouts } from '@/services/sync';
 import { addMeasurement, listMeasurements } from '@/storage/measurement-store';
 import { saveProfileFields, setLocalUsername, setProfilePhoto } from '@/storage/profile-store';
 import { Spacing } from '@/theme';
-import { measurementLimits } from '@/types/measurement';
+import { fromMeasurementDisplay, measurementLimits, toMeasurementDisplay } from '@/types/measurement';
+import { unitLabel } from '@/lib/units';
 import {
   GENDER_LABELS,
   type Gender,
@@ -65,7 +66,7 @@ function Form({ profile, currentWeight }: { profile: Profile; currentWeight: num
   const [birthDate, setBirthDate] = useState<string | null>(profile.birthDate);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [gender, setGender] = useState<Gender | null>(profile.gender);
-  const [weight, setWeight] = useState(currentWeight !== null ? formatNumber(currentWeight, 1) : '');
+  const [weight, setWeight] = useState(currentWeight !== null ? formatNumber(toMeasurementDisplay('WEIGHT', currentWeight), 1) : '');
   const [instagram, setInstagram] = useState(profile.instagram ?? '');
   const [tiktok, setTiktok] = useState(profile.tiktok ?? '');
   const [website, setWebsite] = useState(profile.website ?? '');
@@ -153,8 +154,9 @@ function Form({ profile, currentWeight }: { profile: Profile; currentWeight: num
       await saveProfileFields(db, fields);
       if (photo !== undefined) await setProfilePhoto(db, photo);
       // Ny vekt registreres som en innveiing nå, slik at den også vises under Målinger.
-      if (weightValue !== null && (currentWeight === null || Math.abs(weightValue - currentWeight) >= 0.05)) {
-        await addMeasurement(db, 'WEIGHT', Math.round(weightValue * 100) / 100, new Date().toISOString());
+      const weightKg = weightValue === null ? null : fromMeasurementDisplay('WEIGHT', weightValue);
+      if (weightKg !== null && (currentWeight === null || Math.abs(weightKg - currentWeight) >= 0.05)) {
+        await addMeasurement(db, 'WEIGHT', weightKg, new Date().toISOString());
       }
       await refreshProfile(db);
       syncPendingWorkouts(db).catch(() => {});
@@ -229,7 +231,7 @@ function Form({ profile, currentWeight }: { profile: Profile; currentWeight: num
           <OutlinedField
             label="Vekt"
             floatLabel
-            placeholder="kg"
+            placeholder={unitLabel()}
             value={weight}
             onChangeText={setWeight}
             keyboardType="decimal-pad"
@@ -246,7 +248,7 @@ function Form({ profile, currentWeight }: { profile: Profile; currentWeight: num
         </View>
         {!weightValid && (
           <ThemedText type="small" style={{ color: theme.danger }}>
-            Vekten må være mellom {limits.min} og {limits.max} kg.
+            Vekten må være mellom {limits.min} og {limits.max} {unitLabel()}.
           </ThemedText>
         )}
         <ThemedText type="small" themeColor="textSecondary">
