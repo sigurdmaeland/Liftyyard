@@ -1,0 +1,15 @@
+# Hemmelighetssjekken (gitleaks) i CI bruker standardreglene, men hopper over disse kjente plassholderne.
+# Legg bare til verdier som garantert er falske. Ekte nøkler skal aldri sjekkes inn, heller ikke her.
+title = "Liftyard"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Plassholdere og testverdier som ikke er ekte hemmeligheter"
+regexes = [
+  # .env.example: forklarende plassholder for AUTH_JWT_SECRET.
+  '''bytt-meg-til-en-lang-tilfeldig-verdi-pa-minst-32-tegn''',
+  # backend/src/test/resources/config/application.yml: JWT-nøkkel som bare brukes i testene.
+  '''test-secret-som-bare-brukes-i-tester-0123456789''',
+]
