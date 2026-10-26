@@ -123,6 +123,19 @@ users ─< programs ─< routines ─< routine_exercises ─< routine_sets
 - `user_settings.weekly_goal` (økter per uke) og `user_settings.weight_unit` (KG/LB). Vekter lagres alltid i kg.
 - Rekorder (medaljer) regnes ut ved oppslag (`social/RecordCalculator`), med samme regel som appen: estimert 1RM (Epley), tyngste vekt og største settvolum; nye topp 3-verdier gir gull/sølv/bronse, første gang en øvelse logges gir ingen.
 
+## Nytt navn (V19)
+
+Systembrukeren som eier de ferdige programmene heter «Liftyard», også i kreditteringen på kopier.
+
+## Forsidebilde på programmer (V20)
+
+`programs.cover_key` peker til bildet i bildelagringen (`covers/<program>/<id>.jpg`, kvadrat, maks 1080 px, uten metadata).
+Bare eieren kan endre det (`POST/DELETE /api/programs/{id}/cover`). En nedlastet kopi får sitt eget eksemplar av bildet,
+så den beholder det selv om originalen endres eller slettes. Bildet slettes sammen med programmet og kontoen.
+
+På telefonen (lokal migrering 13) ligger et nytt bilde som fil til programmet finnes på serveren; da lastes det opp,
+og adressen fra serveren brukes (`cover_url`). Fjerning sendes på samme måte ved neste synk.
+
 ## Beregninger
 
 - **Rekord:** Tyngste fullførte arbeidssett i en øvelse er tyngre enn alt tidligere i samme øvelse. Første gang øvelsen logges, teller ikke.

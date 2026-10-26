@@ -51,6 +51,10 @@ public class ProgramEntity {
     @AttributeOverride(name = "id", column = @Column(name = "origin_program_id"))
     private Origin origin;
 
+    /** Forsidebildet i bildelagringen, eller null (appen viser da en farget standardforside). */
+    @Column(name = "cover_key")
+    private String coverKey;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -101,6 +105,13 @@ public class ProgramEntity {
     public int getDownloadCount() { return downloadCount; }
     public UUID getSourceProgramId() { return sourceProgramId; }
     public Origin getOrigin() { return origin; }
+    public String getCoverKey() { return coverKey; }
     public Instant getCreatedAt() { return createdAt; }
+
+    /** Nytt (eller null for intet) forsidebilde. Teller som en endring av programmet. */
+    public void setCoverKey(String coverKey, Instant updatedAt) {
+        this.coverKey = coverKey;
+        this.updatedAt = updatedAt;
+    }
     public Instant getUpdatedAt() { return updatedAt; }
 }

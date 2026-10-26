@@ -7,10 +7,12 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-/** Lagrer filer i en mappe på disken. Nøkler kontrolleres slik at ingen kan nå filer utenfor mappen. */
+/** Lagrer filer i en mappe på disken (utvikling). Nøkler kontrolleres slik at ingen kan nå filer utenfor mappen. */
 @Component
+@ConditionalOnProperty(name = "app.media.storage", havingValue = "local", matchIfMissing = true)
 class LocalMediaStorage implements MediaStorage {
 
     private static final Pattern SAFE_KEY = Pattern.compile("^[a-z]+(/[A-Za-z0-9-]+)+(\\.jpg)?$");

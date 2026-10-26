@@ -15,6 +15,8 @@ import java.util.function.UnaryOperator;
 import no.fitnessapp.common.ConflictException;
 import no.fitnessapp.common.NotFoundException;
 import no.fitnessapp.media.AvatarService;
+import no.fitnessapp.media.MediaStorage;
+import no.fitnessapp.programs.application.ProgramCoverService;
 import no.fitnessapp.programs.api.Credit;
 import no.fitnessapp.programs.api.ProgramResponse;
 import no.fitnessapp.programs.api.RoutineResponse;
@@ -70,11 +72,13 @@ public class ExploreService {
     private final AvatarService avatars;
     private final CreditResolver credits;
     private final JdbcClient jdbc;
+    private final ProgramCoverService covers;
+    private final MediaStorage storage;
 
     public ExploreService(
             ProgramRepository programs, RoutineRepository routines, ProgramService programService, RoutineService routineService,
             ExerciseCopier exerciseCopier, NotificationService notifications, AvatarService avatars, CreditResolver credits,
-            JdbcClient jdbc) {
+            JdbcClient jdbc, ProgramCoverService covers, MediaStorage storage) {
         this.programs = programs;
         this.routines = routines;
         this.programService = programService;
@@ -84,6 +88,12 @@ public class ExploreService {
         this.avatars = avatars;
         this.credits = credits;
         this.jdbc = jdbc;
+        this.covers = covers;
+        this.storage = storage;
+    }
+
+    private String coverUrl(String key) {
+        return key == null ? null : storage.publicUrl(key);
     }
 
     // ---------- Programmer ----------
@@ -109,7 +119,7 @@ public class ExploreService {
         var credit = credits.forOrigins(entities.stream().map(RoutineEntity::getOrigin).toList());
         List<RoutineResponse> rs = entities.stream().map(r -> RoutineResponse.from(r, false, credit.apply(r.getOrigin()))).toList();
         return new ExploreProgramResponse(p.id(), p.name(), p.description(), p.authorName(), p.author(), p.visibility(), p.mine(),
-                p.fromFollowing(), p.level(), p.daysPerWeek(), rs.size(), p.downloadCount(), p.basedOn(), p.remixCount(), p.createdAt(), rs);
+                p.fromFollowing(), p.level(), p.daysPerWeek(), rs.size(), p.downloadCount(), p.basedOn(), p.remixCount(), p.coverUrl(), p.createdAt(), rs);
     }
 
     /**
@@ -131,7 +141,10 @@ public class ExploreService {
         Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         List<RoutineEntity> sourceRoutines = routines.findInProgram(source.getId(), source.getOwnerUserId());
         UnaryOperator<UUID> exerciseIds = exerciseCopier.copyFor(source.getOwnerUserId(), userId, exerciseIdsIn(sourceRoutines));
-        programs.save(ProgramEntity.copyOf(source, copyId, userId, now, authorName));
+        ProgramEntity copy = ProgramEntity.copyOf(source, copyId, userId, now, authorName);
+        // Kopien får sitt eget eksemplar av bildet, så den beholder det selv om originalen endres.
+        copy.setCoverKey(covers.copyFor(source.getCoverKey(), copyId), now);
+        programs.save(copy);
         for (RoutineEntity r : sourceRoutines) {
             routines.save(RoutineEntity.copyOf(r, UUID.randomUUID(), userId, copyId, now, exerciseIds, authorName));
         }
@@ -199,7 +212,7 @@ public class ExploreService {
 
     private List<ExploreProgramResponse> queryPrograms(UUID viewer, String filter, String order, Map<String, Object> params, String q) {
         String sql = """
-                SELECT p.id, p.name, p.description, p.visibility, p.level, p.days_per_week, p.download_count, p.created_at,
+                SELECT p.id, p.name, p.description, p.visibility, p.level, p.days_per_week, p.download_count, p.created_at, p.cover_key,
                        p.owner_user_id, u.username, u.display_name, u.avatar_key,
                        (SELECT count(*) FROM routines r WHERE r.program_id = p.id) AS routine_count,
                        (SELECT count(*) FROM programs c WHERE c.origin_program_id = p.id AND c.visibility <> 'PRIVATE') AS remix_count,
@@ -223,7 +236,7 @@ public class ExploreService {
                     Visibility.valueOf(rs.getString("visibility")), author.id().equals(viewer), rs.getBoolean("from_following"),
                     level == null ? null : Level.valueOf(level), (Integer) rs.getObject("days_per_week"),
                     rs.getInt("routine_count"), rs.getInt("download_count"), credit(rs), rs.getInt("remix_count"),
-                    rs.getTimestamp("created_at").toInstant(), List.of());
+                    coverUrl(rs.getString("cover_key")), rs.getTimestamp("created_at").toInstant(), List.of());
         }).list();
     }
 

@@ -36,7 +36,15 @@ const loadLibrary = async (db: SQLiteDatabase) => ({
 /** Tillegg i undertittelen som viser at noe er delt i community. */
 const SHARED: Record<ShareVisibility, string> = { PRIVATE: '', FOLLOWERS: ' · Delt med følgere', PUBLIC: ' · Delt offentlig' };
 
-type Item = { key: string; title: string; subtitle?: string; icon?: Parameters<typeof ListTile>[0]['icon']; updatedAt?: string; onPress: () => void };
+type Item = {
+  key: string;
+  title: string;
+  subtitle?: string;
+  icon?: Parameters<typeof ListTile>[0]['icon'];
+  imageUri?: string | null;
+  updatedAt?: string;
+  onPress: () => void;
+};
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
@@ -94,6 +102,7 @@ export default function LibraryScreen() {
             title: p.name,
             subtitle: `${plural(p.routineCount, 'rutine', 'rutiner')}${SHARED[p.visibility]}`,
             icon: 'books.vertical' as const,
+            imageUri: p.coverUri,
             updatedAt: p.updatedAt,
             onPress: () => router.push({ pathname: '/program/[id]', params: { id: p.id } }),
           })),
@@ -184,7 +193,15 @@ export default function LibraryScreen() {
 
         <ScrollView contentContainerStyle={[styles.list, grid && styles.gridList]}>
           {items.map((item) => (
-            <ListTile key={item.key} icon={item.icon} title={item.title} subtitle={item.subtitle} onPress={item.onPress} grid={grid} />
+            <ListTile
+              key={item.key}
+              icon={item.icon}
+              imageUri={item.imageUri}
+              title={item.title}
+              subtitle={item.subtitle}
+              onPress={item.onPress}
+              grid={grid}
+            />
           ))}
           <View style={styles.footer} />
         </ScrollView>

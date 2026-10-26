@@ -225,6 +225,14 @@ const MIGRATIONS: string[] = [
   `
   ALTER TABLE workout_exercises ADD COLUMN superset_group INTEGER;
   `,
+  // 13: Forsidebilde på programmer. cover_url er bildet på serveren; cover_file et nytt bilde som venter
+  // på opplasting; cover_action er det som skal gjøres ved neste synk ('upload' eller 'remove').
+  `
+  ALTER TABLE programs ADD COLUMN cover_url TEXT;
+  ALTER TABLE programs ADD COLUMN cover_file TEXT;
+  ALTER TABLE programs ADD COLUMN cover_action TEXT;
+  ALTER TABLE programs ADD COLUMN cover_error TEXT;
+  `,
 ];
 
 export async function migrateDatabase(db: SQLiteDatabase): Promise<void> {

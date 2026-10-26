@@ -27,6 +27,9 @@ public interface ProgramRepository extends JpaRepository<ProgramEntity, UUID> {
 
     Optional<ProgramEntity> findByIdAndVisibility(UUID id, no.fitnessapp.programs.domain.Visibility visibility);
 
+    @Query("select p.coverKey from ProgramEntity p where p.ownerUserId = :ownerUserId and p.coverKey is not null")
+    List<String> coverKeysOwnedBy(UUID ownerUserId);
+
     @Modifying
     @Query("update ProgramEntity p set p.downloadCount = p.downloadCount + 1 where p.id = :id")
     int incrementDownloads(UUID id);

@@ -40,6 +40,15 @@ jobs:
           path: backend/build/reports/tests/test
           retention-days: 7
 
+  docker:
+    name: Backend-bilde (samme som Railway bygger)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Bygg Docker-bildet
+        run: docker build --tag liftyard-backend backend
+
   mobile:
     name: Mobil (typesjekk, lint og tester)
     runs-on: ubuntu-latest

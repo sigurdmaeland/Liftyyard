@@ -26,7 +26,7 @@ export function ExploreProgramCard({ program }: { program: ExploreProgram }) {
       accessibilityRole="button"
       accessibilityLabel={`${program.name} av ${authorLabel(program.author)}, ${downloadsLabel(program.downloadCount)}`}
       style={({ pressed }) => [styles.card, { opacity: pressed ? 0.8 : 1 }]}>
-      <ProgramCover id={program.id} title={program.name} tag={coverTag(program)} size={CARD_WIDTH} />
+      <ProgramCover id={program.id} title={program.name} tag={coverTag(program)} size={CARD_WIDTH} imageUri={program.coverUrl} />
       <ThemedText style={styles.name} numberOfLines={2}>
         {program.name}
       </ThemedText>

@@ -26,6 +26,10 @@ spring:
     port: ${MAIL_PORT:1025}
     username: ${MAIL_USERNAME:}
     password: ${MAIL_PASSWORD:}
+    properties:
+      # Ekte e-posttjenester (i drift) krever kryptert forbindelse. Mailpit lokalt gjør ikke det.
+      mail.smtp.auth: ${MAIL_SMTP_AUTH:false}
+      mail.smtp.starttls.enable: ${MAIL_STARTTLS:false}
   servlet:
     multipart:
       # Profilbilder lastes opp som multipart. Serveren skalerer dem ned etterpå.
@@ -37,7 +41,11 @@ spring:
       enabled: true
 
 server:
-  port: ${SERVER_PORT:8080}
+  # Railway og lignende setter PORT. Lokalt 8080.
+  port: ${PORT:${SERVER_PORT:8080}}
+  # Bak Railways proxy: bruk https og riktig vertsnavn fra X-Forwarded-*-headerne.
+  forward-headers-strategy: framework
+  shutdown: graceful
 
 management:
   endpoints:
@@ -73,7 +81,16 @@ app:
     # Versjonen av vilkår og personvernerklæring. Endres den, må alle godta på nytt (appen viser dem igjen).
     version: ${TERMS_VERSION:2026-10-24}
   media:
-    # Lokalt lagres bilder i en mappe. Når vi velger skytilbyder, byttes lagringen til S3/R2.
+    # local = en mappe på disken (utvikling). s3 = Cloudflare R2 eller annen S3-kompatibel lagring (drift).
+    storage: ${MEDIA_STORAGE:local}
+    # Mappen for local-lagring.
     dir: ${MEDIA_DIR:data/media}
-    # Adressen telefonen henter bilder fra (GET /media/...).
+    # Adressen telefonen henter bilder fra. Lokalt backend selv (GET /media/...), i drift R2-domenet.
     public-url: ${MEDIA_PUBLIC_URL:http://localhost:8080/media}
+    s3:
+      # R2: https://<konto-ID>.r2.cloudflarestorage.com. Region er alltid «auto» hos R2.
+      endpoint: ${S3_ENDPOINT:}
+      region: ${S3_REGION:auto}
+      bucket: ${S3_BUCKET:}
+      access-key: ${S3_ACCESS_KEY:}
+      secret-key: ${S3_SECRET_KEY:}

@@ -63,11 +63,16 @@ cd backend && ./gradlew test
 cd mobile && npm run typecheck && npm run lint && npm test
 ```
 
+## Drift
+
+Backend og database kjører på Railway (EU), bilder i Cloudflare R2. Oppsett steg for steg: [docs/deploy-railway.md](docs/deploy-railway.md).
+
 ## CI (GitHub Actions)
 
 `.github/workflows/ci.yml` kjører på hver push til `main` og hver pull request:
 
 - **Backend:** `./gradlew build` med Java 21. Testene starter PostgreSQL selv via Testcontainers, så CI trenger ingen `.env`.
+- **Backend-bilde:** bygger `backend/Dockerfile`, det samme som Railway kjører.
 - **Mobil:** `npm ci`, typesjekk, lint og Jest (Node 22).
 - **Hemmelighetssjekk:** gitleaks stopper bygget hvis en nøkkel eller et passord er sjekket inn.
 

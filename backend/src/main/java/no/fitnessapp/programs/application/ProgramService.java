@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import no.fitnessapp.common.ConflictException;
 import no.fitnessapp.common.NotFoundException;
 import no.fitnessapp.favorites.FavoriteStore;
+import no.fitnessapp.media.MediaStorage;
 import no.fitnessapp.programs.api.ProgramRequest;
 import no.fitnessapp.programs.api.ProgramResponse;
 import no.fitnessapp.programs.api.ProgramSummaryResponse;
@@ -30,12 +31,15 @@ public class ProgramService {
     private final RoutineRepository routines;
     private final FavoriteStore favorites;
     private final CreditResolver credits;
+    private final MediaStorage storage;
 
-    public ProgramService(ProgramRepository programs, RoutineRepository routines, FavoriteStore favorites, CreditResolver credits) {
+    public ProgramService(
+            ProgramRepository programs, RoutineRepository routines, FavoriteStore favorites, CreditResolver credits, MediaStorage storage) {
         this.programs = programs;
         this.routines = routines;
         this.favorites = favorites;
         this.credits = credits;
+        this.storage = storage;
     }
 
     /** Oppretter eller oppdaterer programmets navn og beskrivelse (idempotent). */
@@ -59,14 +63,14 @@ public class ProgramService {
             program = programs.save(program);
         }
         programs.flush();
-        return new SaveResult(ProgramResponse.from(program, routinesOf(userId, programId), credits.forOrigin(program.getOrigin())), created);
+        return new SaveResult(ProgramResponse.from(program, routinesOf(userId, programId), credits.forOrigin(program.getOrigin()), coverUrl(program)), created);
     }
 
     @Transactional(readOnly = true)
     public ProgramResponse get(UUID userId, UUID programId) {
         ProgramEntity p = programs.findByIdAndOwnerUserId(programId, userId)
                 .orElseThrow(() -> new NotFoundException("Fant ikke programmet"));
-        return ProgramResponse.from(p, routinesOf(userId, programId), credits.forOrigin(p.getOrigin()));
+        return ProgramResponse.from(p, routinesOf(userId, programId), credits.forOrigin(p.getOrigin()), coverUrl(p));
     }
 
     @Transactional(readOnly = true)
@@ -74,14 +78,20 @@ public class ProgramService {
         Map<UUID, Long> counts = routines.countPerProgram(userId).stream()
                 .collect(Collectors.toMap(RoutineRepository.ProgramCount::getProgramId, RoutineRepository.ProgramCount::getCount));
         return programs.findByOwnerUserIdOrderByUpdatedAtDesc(userId).stream()
-                .map(p -> ProgramSummaryResponse.from(p, counts.getOrDefault(p.getId(), 0L)))
+                .map(p -> ProgramSummaryResponse.from(p, counts.getOrDefault(p.getId(), 0L), coverUrl(p)))
                 .toList();
     }
 
-    /** Sletter programmet og rutinene i det (ON DELETE CASCADE). Idempotent. */
+    /** Sletter programmet og rutinene i det (ON DELETE CASCADE) og forsidebildet. Idempotent. */
     @Transactional
     public void delete(UUID userId, UUID programId) {
+        String cover = programs.findByIdAndOwnerUserId(programId, userId).map(ProgramEntity::getCoverKey).orElse(null);
         programs.deleteOwned(programId, userId);
+        if (cover != null) storage.delete(cover);
+    }
+
+    private String coverUrl(ProgramEntity p) {
+        return p.getCoverKey() == null ? null : storage.publicUrl(p.getCoverKey());
     }
 
     private List<RoutineResponse> routinesOf(UUID userId, UUID programId) {

@@ -59,7 +59,7 @@ export async function countUnsynced(db: SQLiteDatabase): Promise<number> {
        (SELECT count(*) FROM workouts WHERE status = 'finished' AND sync_status IN ('pending', 'failed'))
      + (SELECT count(*) FROM workouts WHERE status = 'active')
      + (SELECT count(*) FROM pending_deletions)
-     + (SELECT count(*) FROM programs WHERE sync_status <> 'synced')
+     + (SELECT count(*) FROM programs WHERE sync_status <> 'synced' OR (cover_action IS NOT NULL AND cover_error IS NULL))
      + (SELECT count(*) FROM routines WHERE sync_status <> 'synced' OR favorite_dirty = 1)
      + (SELECT count(*) FROM pending_program_deletions) + (SELECT count(*) FROM pending_routine_deletions)
      + (SELECT count(*) FROM exercises WHERE sync_status <> 'synced' OR favorite_dirty = 1)
@@ -169,6 +169,7 @@ export type RemoteProgramMeta = {
   daysPerWeek?: number | null;
   basedOn?: unknown;
   sourceProgramId: string | null;
+  coverUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -176,10 +177,10 @@ export type RemoteProgramMeta = {
 export async function insertRemoteProgram(db: SQLiteDatabase, p: RemoteProgramMeta) {
   await db.runAsync(
     `INSERT OR REPLACE INTO programs (id, name, description, visibility, level, days_per_week, credit, created_at, updated_at, sync_status,
-       source_program_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+       source_program_id, cover_url)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?, ?)`,
     p.id, p.name, p.description, p.visibility ?? 'PRIVATE', p.level ?? null, p.daysPerWeek ?? null, p.basedOn ? JSON.stringify(p.basedOn) : null,
-    p.createdAt, p.updatedAt, p.sourceProgramId,
+    p.createdAt, p.updatedAt, p.sourceProgramId, p.coverUrl ?? null,
   );
 }
 

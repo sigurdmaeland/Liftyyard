@@ -22,10 +22,10 @@ public class MediaController {
     }
 
     /**
-     * Profilbilder og øktbilder. Øktbilder har uforutsigbare adresser (tilfeldig ID) som bare deles med
+     * Profilbilder, øktbilder og programforsider. Øktbilder har uforutsigbare adresser (tilfeldig ID) som bare deles med
      * dem som kan se økten. I drift erstattes dette av kortlivede signerte lenker fra objektlagringen.
      */
-    @GetMapping("/media/{kind:avatars|photos}/{userId}/{file}")
+    @GetMapping("/media/{kind:avatars|photos|covers}/{userId}/{file}")
     public ResponseEntity<byte[]> file(@PathVariable String kind, @PathVariable String userId, @PathVariable String file) {
         return storage.read(kind + "/" + userId + "/" + file)
                 .map(bytes -> ResponseEntity.ok()

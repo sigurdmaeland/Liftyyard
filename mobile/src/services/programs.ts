@@ -1,4 +1,4 @@
-import { deleteRequest, putJson } from '@/services/api';
+import { deleteRequest, putJson, uploadFile } from '@/services/api';
 import type { Level } from '@/types/explore';
 import type { Routine, ShareVisibility } from '@/types/program';
 
@@ -42,6 +42,16 @@ export function toRoutineRequest(r: Routine) {
 
 export async function uploadProgram(p: ProgramFields & { id: string }): Promise<void> {
   await putJson(`/api/programs/${p.id}`, toProgramRequest(p));
+}
+
+/** Laster opp forsidebildet. Serveren beskjærer og skalerer det, og svarer med den offentlige adressen. */
+export async function uploadProgramCover(programId: string, fileUri: string): Promise<string> {
+  const res = await uploadFile<{ coverUrl: string }>('POST', `/api/programs/${programId}/cover`, fileUri, 'image/jpeg');
+  return res.coverUrl;
+}
+
+export async function deleteRemoteProgramCover(programId: string): Promise<void> {
+  await deleteRequest(`/api/programs/${programId}/cover`);
 }
 
 export async function deleteRemoteProgram(id: string): Promise<void> {

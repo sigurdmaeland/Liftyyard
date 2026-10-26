@@ -10,9 +10,11 @@ import {
 } from '@/services/exercises';
 import {
   deleteRemoteProgram,
+  deleteRemoteProgramCover,
   deleteRemoteRoutine,
   setRemoteRoutineFavorite,
   uploadProgram,
+  uploadProgramCover,
   uploadRoutine,
 } from '@/services/programs';
 import { deleteRemoteMeasurement, saveRemoteSettings, uploadMeasurement } from '@/services/measurements';
@@ -41,6 +43,10 @@ import {
   clearRoutineFavoriteDirty,
   listDirtyRoutineFavorites,
   listPendingProgramDeletions,
+  listCoverTasks,
+  markCoverFailed,
+  markCoverRemoved,
+  markCoverUploaded,
   listPendingRoutineDeletions,
   listProgramsToSync,
   listRoutinesToSync,
@@ -118,6 +124,19 @@ async function run(db: SQLiteDatabase): Promise<SyncReport> {
       const result = await attempt(() => uploadProgram(p));
       if (result === null) await markProgramSynced(db, p.id, p.updated_at);
       else if (result !== 'retry') await markProgramFailed(db, p.id, result);
+    }
+    // Forsidebilder, når programmet finnes på serveren.
+    for (const c of await listCoverTasks(db)) {
+      if (c.action === 'remove') {
+        if ((await attempt(() => deleteRemoteProgramCover(c.programId))) !== 'retry') await markCoverRemoved(db, c.programId);
+        continue;
+      }
+      let url = '';
+      const result = await attempt(async () => {
+        url = await uploadProgramCover(c.programId, c.fileUri!);
+      });
+      if (result === null) await markCoverUploaded(db, c.programId, c.file!, url);
+      else if (result !== 'retry') await markCoverFailed(db, c.programId, result);
     }
 
     // 3. Rutiner og favoritter.

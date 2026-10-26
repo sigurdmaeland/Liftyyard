@@ -1,3 +1,4 @@
+import { File, Paths } from 'expo-file-system';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 import { uuidv7 } from '@/lib/ids';
@@ -23,6 +24,10 @@ export type ProgramRow = {
   days_per_week: number | null;
   source_program_id: string | null;
   credit: string | null;
+  cover_url: string | null;
+  cover_file: string | null;
+  cover_action: 'upload' | 'remove' | null;
+  cover_error: string | null;
   updated_at: string;
   sync_status: SyncStatus;
 };
@@ -74,6 +79,28 @@ export function parseCredit(json: string | null): Credit | null {
 }
 
 const creditJson = (c: Credit | null | undefined) => (c ? JSON.stringify(c) : null);
+
+// ---------- Forsidebilde (lokal fil) ----------
+
+/** Lokal fil i dokumentmappen, hvis den finnes. */
+function localCover(file: string | null): string | null {
+  if (!file) return null;
+  const f = new File(Paths.document, file);
+  return f.exists ? f.uri : null;
+}
+
+function deleteCoverFile(file: string | null) {
+  if (!file) return;
+  try {
+    const f = new File(Paths.document, file);
+    if (f.exists) f.delete();
+  } catch {
+    // En fil som ikke kan slettes, skader ingenting.
+  }
+}
+
+/** Det som skal vises: et nytt bilde som venter på opplasting, ellers bildet på serveren. */
+const coverUriOf = (r: Pick<ProgramRow, 'cover_file' | 'cover_url'>) => localCover(r.cover_file) ?? r.cover_url;
 
 const ROUTINE_SELECT = 'SELECT r.*, p.name AS program_name FROM routines r LEFT JOIN programs p ON p.id = r.program_id';
 
@@ -172,6 +199,7 @@ export async function listPrograms(db: SQLiteDatabase): Promise<ProgramSummary[]
     description: r.description,
     routineCount: r.routine_count,
     visibility: r.visibility,
+    coverUri: coverUriOf(r),
     updatedAt: r.updated_at,
   }));
 }
@@ -188,6 +216,7 @@ export async function getProgram(db: SQLiteDatabase, id: string): Promise<Progra
     daysPerWeek: row.days_per_week,
     sourceProgramId: row.source_program_id,
     basedOn: parseCredit(row.credit),
+    coverUri: coverUriOf(row),
     updatedAt: row.updated_at,
     syncStatus: row.sync_status,
     routines: await loadRoutines(db, 'WHERE r.program_id = ? ORDER BY r.position, r.created_at', row.id),
@@ -250,10 +279,62 @@ export async function setProgramFacts(db: SQLiteDatabase, id: string, level: Lev
 
 /** Sletter programmet og rutinene i det lokalt, og legger slettingen i kø til serveren. */
 export async function deleteProgram(db: SQLiteDatabase, id: string) {
+  const row = await db.getFirstAsync<{ cover_file: string | null }>('SELECT cover_file FROM programs WHERE id = ?', id);
+  deleteCoverFile(row?.cover_file ?? null);
   await db.withExclusiveTransactionAsync(async (txn) => {
     await txn.runAsync('DELETE FROM programs WHERE id = ?', id);
     await txn.runAsync('INSERT OR IGNORE INTO pending_program_deletions (program_id, created_at) VALUES (?, ?)', id, nowIso());
   });
+}
+
+/**
+ * Nytt forsidebilde. Bildet kopieres til appens dokumentmappe og vises med en gang; det lastes opp
+ * når programmet finnes på serveren (neste synk). Et tidligere bilde som ikke er lastet opp, slettes.
+ */
+export async function setProgramCover(db: SQLiteDatabase, id: string, sourceUri: string) {
+  const row = await db.getFirstAsync<{ cover_file: string | null }>('SELECT cover_file FROM programs WHERE id = ?', id);
+  const file = `cover-${uuidv7()}.jpg`;
+  new File(sourceUri).copy(new File(Paths.document, file));
+  await db.runAsync("UPDATE programs SET cover_file = ?, cover_action = 'upload', cover_error = NULL WHERE id = ?", file, id);
+  deleteCoverFile(row?.cover_file ?? null);
+}
+
+/** Fjerner forsidebildet. Er det lastet opp, slettes det på serveren ved neste synk. */
+export async function removeProgramCover(db: SQLiteDatabase, id: string) {
+  const row = await db.getFirstAsync<{ cover_file: string | null; cover_url: string | null }>(
+    'SELECT cover_file, cover_url FROM programs WHERE id = ?',
+    id,
+  );
+  if (!row) return;
+  deleteCoverFile(row.cover_file);
+  await db.runAsync(
+    'UPDATE programs SET cover_file = NULL, cover_url = NULL, cover_action = ?, cover_error = NULL WHERE id = ?',
+    row.cover_url ? 'remove' : null,
+    id,
+  );
+}
+
+/** Lager en egen kopi av programmet med alle rutinene (privat). Bildet følger med hvis det finnes på telefonen. */
+export async function duplicateProgram(db: SQLiteDatabase, programId: string): Promise<string | null> {
+  const source = await getProgram(db, programId);
+  if (!source) return null;
+  const row = await db.getFirstAsync<{ cover_file: string | null }>('SELECT cover_file FROM programs WHERE id = ?', programId);
+  const id = uuidv7();
+  const now = nowIso();
+  await db.runAsync(
+    `INSERT INTO programs (id, name, description, visibility, level, days_per_week, credit, created_at, updated_at, sync_status)
+     VALUES (?, ?, ?, 'PRIVATE', ?, ?, ?, ?, ?, 'pending')`,
+    id, `${source.name} (kopi)`.slice(0, 100), source.description, source.level, source.daysPerWeek, creditJson(source.basedOn), now, now,
+  );
+  for (const r of source.routines) {
+    const copy = await duplicateRoutine(db, r.id);
+    if (copy) {
+      await db.runAsync("UPDATE routines SET program_id = ?, position = ?, name = ? WHERE id = ?", id, r.position, r.name, copy);
+    }
+  }
+  const local = localCover(row?.cover_file ?? null);
+  if (local) await setProgramCover(db, id, local);
+  return id;
 }
 
 // ---------- Rutiner ----------
@@ -486,6 +567,40 @@ export async function clearPendingRoutineDeletion(db: SQLiteDatabase, id: string
   await db.runAsync('DELETE FROM pending_routine_deletions WHERE routine_id = ?', id);
 }
 
+export type CoverTask = { programId: string; action: 'upload' | 'remove'; fileUri: string | null; file: string | null };
+
+/** Bilder som skal lastes opp eller fjernes, for programmer som finnes på serveren og ikke er avvist. */
+export async function listCoverTasks(db: SQLiteDatabase): Promise<CoverTask[]> {
+  const rows = await db.getAllAsync<ProgramRow>(
+    "SELECT * FROM programs WHERE cover_action IS NOT NULL AND cover_error IS NULL AND sync_status = 'synced'",
+  );
+  return rows.flatMap((r): CoverTask[] => {
+    if (r.cover_action === 'remove') return [{ programId: r.id, action: 'remove', fileUri: null, file: null }];
+    const uri = localCover(r.cover_file);
+    return uri ? [{ programId: r.id, action: 'upload', fileUri: uri, file: r.cover_file }] : [];
+  });
+}
+
+/** Bildet er lastet opp: bruk adressen på serveren og slett den lokale filen (hvis brukeren ikke har byttet bilde i mellomtiden). */
+export async function markCoverUploaded(db: SQLiteDatabase, programId: string, file: string, url: string) {
+  const res = await db.runAsync(
+    "UPDATE programs SET cover_url = ?, cover_file = NULL, cover_action = NULL WHERE id = ? AND cover_file = ? AND cover_action = 'upload'",
+    url,
+    programId,
+    file,
+  );
+  if (res.changes > 0) deleteCoverFile(file);
+}
+
+export async function markCoverRemoved(db: SQLiteDatabase, programId: string) {
+  await db.runAsync("UPDATE programs SET cover_action = NULL WHERE id = ? AND cover_action = 'remove'", programId);
+}
+
+/** Serveren avviste bildet. Det prøves ikke igjen før brukeren velger et nytt. */
+export async function markCoverFailed(db: SQLiteDatabase, programId: string, error: string) {
+  await db.runAsync('UPDATE programs SET cover_error = ? WHERE id = ?', error, programId);
+}
+
 // ---------- Utforsk ----------
 
 /** ID-en til den lokale kopien av et offentlig program, hvis brukeren har lastet det ned. */
@@ -531,10 +646,10 @@ export async function saveDownloadedProgram(db: SQLiteDatabase, p: RemoteProgram
   await db.withExclusiveTransactionAsync(async (txn) => {
     await txn.runAsync(
       `INSERT OR REPLACE INTO programs (id, name, description, visibility, level, days_per_week, credit, created_at, updated_at, sync_status,
-         source_program_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+         source_program_id, cover_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?, ?)`,
       p.id, p.name, p.description, p.visibility ?? 'PRIVATE', p.level ?? null, p.daysPerWeek ?? null, creditJson(p.basedOn),
-      p.createdAt, p.updatedAt, p.sourceProgramId,
+      p.createdAt, p.updatedAt, p.sourceProgramId, p.coverUrl ?? null,
     );
     for (const r of p.routines) await writeRemoteRoutine(txn, r, p.id);
   });

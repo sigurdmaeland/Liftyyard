@@ -91,6 +91,7 @@ export default function RootLayout() {
           <Stack.Screen name="history/[id]" options={{ title: 'Økt' }} />
           <Stack.Screen name="exercise/[id]" options={{ title: 'Øvelse' }} />
           <Stack.Screen name="program/[id]" options={{ title: '' }} />
+          <Stack.Screen name="program/edit" options={{ title: 'Rediger program' }} />
           <Stack.Screen name="routine/[id]" options={{ title: '' }} />
           <Stack.Screen name="routine/add-exercise" options={{ presentation: 'modal', title: 'Legg til øvelse' }} />
           <Stack.Screen

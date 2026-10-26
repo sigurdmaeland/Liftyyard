@@ -58,6 +58,8 @@ export type Program = {
   /** Satt når programmet er lastet ned fra Utforsk. */
   sourceProgramId: string | null;
   basedOn: Credit | null;
+  /** Forsidebildet: lokal fil som venter på opplasting, ellers adressen på serveren. null = standardforside. */
+  coverUri: string | null;
   updatedAt: string;
   syncStatus: 'pending' | 'synced' | 'failed';
   routines: Routine[];
@@ -69,5 +71,6 @@ export type ProgramSummary = {
   description: string | null;
   routineCount: number;
   visibility: ShareVisibility;
+  coverUri: string | null;
   updatedAt: string;
 };

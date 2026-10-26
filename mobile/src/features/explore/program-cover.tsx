@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
@@ -27,20 +28,37 @@ function gradientFor(id: string): [string, string] {
   return GRADIENTS[h % GRADIENTS.length];
 }
 
-/** Programomslag: fargeovergang, stor tittel og en merkelapp (f.eks. «3 DAGER»). */
+/**
+ * Programomslag. Har programmet et forsidebilde (imageUri), vises bildet med merkelappen nederst.
+ * Ellers en fargeovergang med stor tittel og merkelapp (f.eks. «3 DAGER»).
+ */
 export function ProgramCover({
   id,
   title,
   tag,
   size,
   radius = 16,
+  imageUri,
 }: {
   id: string;
   title: string;
   tag?: string;
   size: number;
   radius?: number;
+  imageUri?: string | null;
 }) {
+  if (imageUri) {
+    return (
+      <View style={[styles.cover, { width: size, height: size, borderRadius: radius }]} accessible={false}>
+        <Image source={{ uri: imageUri }} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} accessibilityIgnoresInvertColors />
+        {tag && (
+          <View style={[styles.tag, styles.tagOnImage]}>
+            <ThemedText style={[styles.tagText, { fontSize: Math.max(10, size * 0.07) }]}>{tag}</ThemedText>
+          </View>
+        )}
+      </View>
+    );
+  }
   const [from, to] = gradientFor(id);
   const gid = `g-${id}`;
   return (
@@ -77,4 +95,5 @@ const styles = StyleSheet.create({
   title: { color: '#FFFFFF', fontWeight: 900, textAlign: 'center', letterSpacing: 0.5 },
   tag: { backgroundColor: 'rgba(255,255,255,0.92)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4 },
   tagText: { color: '#111827', fontWeight: 800, letterSpacing: 0.5 },
+  tagOnImage: { position: 'absolute', left: 10, bottom: 10 },
 });

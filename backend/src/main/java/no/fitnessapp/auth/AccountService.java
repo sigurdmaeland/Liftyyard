@@ -117,6 +117,8 @@ public class AccountService {
     public void delete(UUID userId) {
         avatars.remove(userId);
         interactions.photoKeysForUser(userId).forEach(storage::delete);
+        jdbc.sql("SELECT cover_key FROM programs WHERE owner_user_id = :id AND cover_key IS NOT NULL")
+                .param("id", userId).query(String.class).list().forEach(storage::delete);
         jdbc.sql("DELETE FROM users WHERE id = :id").param("id", userId).update();
     }
 }

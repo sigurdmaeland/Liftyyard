@@ -60,6 +60,8 @@ export type ExploreProgram = {
   basedOn: Credit | null;
   /** Hvor mange delte programmer som bygger på dette. */
   remixCount: number;
+  /** Forsidebildet, eller null (da vises en generert forside). */
+  coverUrl?: string | null;
   createdAt: string;
   routines: RemoteRoutine[];
 };
@@ -92,6 +94,7 @@ export type RemoteProgram = {
   daysPerWeek: number | null;
   sourceProgramId: string | null;
   basedOn?: Credit | null;
+  coverUrl?: string | null;
   createdAt: string;
   updatedAt: string;
   routines: RemoteRoutine[];

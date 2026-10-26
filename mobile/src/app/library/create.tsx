@@ -16,7 +16,7 @@ export default function CreateSheet() {
 
   const program = async () => {
     const id = await createProgram(db);
-    router.replace({ pathname: '/program/[id]', params: { id, isNew: '1' } });
+    router.replace({ pathname: '/program/edit', params: { id, isNew: '1' } });
   };
   const routine = async () => {
     const id = await createRoutine(db, null);

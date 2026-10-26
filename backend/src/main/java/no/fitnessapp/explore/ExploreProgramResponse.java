@@ -28,5 +28,7 @@ public record ExploreProgramResponse(
         int downloadCount,
         Credit basedOn,
         int remixCount,
+        /** Offentlig adresse til forsidebildet, eller null (appen viser da en generert forside). */
+        String coverUrl,
         Instant createdAt,
         List<RoutineResponse> routines) {}
