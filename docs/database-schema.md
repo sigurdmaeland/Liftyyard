@@ -136,6 +136,13 @@ så den beholder det selv om originalen endres eller slettes. Bildet slettes sam
 På telefonen (lokal migrering 13) ligger et nytt bilde som fil til programmet finnes på serveren; da lastes det opp,
 og adressen fra serveren brukes (`cover_url`). Fjerning sendes på samme måte ved neste synk.
 
+## Tilbakemeldinger (V21)
+
+`feedback` lagrer meldinger fra «Få hjelp» i appen: feil (`BUG`), forslag (`IDEA`) og spørsmål til support (`SUPPORT`),
+med appversjon og system. Maks 10 per bruker per time, idempotent på `id`. Moderatorer leser og lukker dem
+(`GET /api/moderation/feedback`, `POST /api/moderation/feedback/{id}/done`). Slettes sammen med kontoen.
+Support svarer på e-postadressen brukeren logget inn med.
+
 ## Beregninger
 
 - **Rekord:** Tyngste fullførte arbeidssett i en øvelse er tyngre enn alt tidligere i samme øvelse. Første gang øvelsen logges, teller ikke.

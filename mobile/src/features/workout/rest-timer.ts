@@ -1,3 +1,4 @@
+import Storage from 'expo-sqlite/kv-store';
 import { useSyncExternalStore } from 'react';
 
 import { scheduleRestNotification } from '@/features/workout/rest-notification';
@@ -9,7 +10,20 @@ import { scheduleRestNotification } from '@/features/workout/rest-notification';
  */
 type RestTimerState = { endsAt: number | null; defaultSeconds: number };
 
-let state: RestTimerState = { endsAt: null, defaultSeconds: 90 };
+const DEFAULT_KEY = 'rest_default_seconds';
+
+/** Standard hviletid huskes på telefonen (Innstillinger → Trening eller hviletimeren i økten). */
+function storedDefault(): number {
+  try {
+    const raw = Storage.getItemSync(DEFAULT_KEY);
+    const v = raw === null ? NaN : Number(raw);
+    return Number.isFinite(v) && v >= 0 && v <= 600 ? v : 90;
+  } catch {
+    return 90;
+  }
+}
+
+let state: RestTimerState = { endsAt: null, defaultSeconds: storedDefault() };
 const listeners = new Set<() => void>();
 
 function set(next: RestTimerState) {
@@ -44,6 +58,11 @@ export const restTimer = {
   },
   setDefault(seconds: number) {
     set({ ...state, defaultSeconds: seconds });
+    try {
+      Storage.setItemSync(DEFAULT_KEY, String(seconds));
+    } catch {
+      // Ikke kritisk: valget gjelder uansett resten av økten.
+    }
   },
 };
 

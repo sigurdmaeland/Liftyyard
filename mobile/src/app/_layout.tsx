@@ -124,7 +124,17 @@ export default function RootLayout() {
           <Stack.Screen name="moderation/index" options={{ title: 'Moderering' }} />
           <Stack.Screen name="calendar/index" options={{ title: 'Måned' }} />
           <Stack.Screen name="calendar/day" options={{ title: '' }} />
-          <Stack.Screen name="settings" options={{ title: 'Innstillinger' }} />
+          <Stack.Screen name="settings/index" options={{ title: 'Innstillinger' }} />
+          <Stack.Screen name="settings/privacy" options={{ title: 'Kontopersonvern' }} />
+          <Stack.Screen name="settings/units" options={{ title: 'Enheter' }} />
+          <Stack.Screen name="settings/theme" options={{ title: 'Tema' }} />
+          <Stack.Screen name="settings/training" options={{ title: 'Treningsinnstillinger' }} />
+          <Stack.Screen name="settings/help" options={{ title: 'Få hjelp' }} />
+          <Stack.Screen name="settings/about" options={{ title: 'Om Liftyard' }} />
+          <Stack.Screen name="settings/feedback" options={{ title: '' }} />
+          <Stack.Screen name="settings/faq" options={{ title: 'Ofte stilte spørsmål' }} />
+          <Stack.Screen name="settings/reminders" options={{ title: 'Treningspåminnelser' }} />
+          <Stack.Screen name="moderation/feedback" options={{ title: 'Tilbakemeldinger' }} />
           <Stack.Screen name="me/index" options={{ title: '' }} />
           <Stack.Screen name="me/edit" options={{ presentation: 'modal', title: 'Rediger profil' }} />
           <Stack.Screen name="me/history" options={{ title: 'Treningshistorie' }} />
