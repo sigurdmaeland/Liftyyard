@@ -2,7 +2,7 @@ import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 plugins {
     java
-    id("org.springframework.boot") version "4.1.1"
+    id("org.springframework.boot") version "4.1.2"
 }
 
 group = "no.fitnessapp"
@@ -37,9 +37,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-security-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-mail")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
     // Bildelagring i drift: Cloudflare R2 via S3-API-et (app.media.storage=s3).
-    implementation(platform("software.amazon.awssdk:bom:2.56.0"))
+    implementation(platform("software.amazon.awssdk:bom:2.57.6"))
     implementation("software.amazon.awssdk:s3")
 
     runtimeOnly("org.postgresql:postgresql")
